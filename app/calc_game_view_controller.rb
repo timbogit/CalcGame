@@ -6,40 +6,45 @@ class CalcGameViewController < UIViewController
   
   def viewDidLoad
     view.image = UIImage.imageNamed('background.jpg')
+    view.userInteractionEnabled = true
+
+    @num = make_label
+    view.addSubview(@num)
     
-    @label = make_label
-    view.addSubview(@label)  
+    @action = UIButton.buttonWithType(UIButtonTypeRoundedRect)
+    @action.setTitle('Tap for a new number!', forState:UIControlStateNormal)
+    @action.addTarget(self, action:'action_tapped', forControlEvents:UIControlEventTouchUpInside)
+    @action.frame = [[10,60], [300,80]]
+    view.addSubview(@action)
     
-    view.userInteractionEnabled = true    
-    tap = UITapGestureRecognizer.alloc.initWithTarget(self, action:'show_answer')
-    view.addGestureRecognizer(tap)
-    
-    @numbers = [1,2,3,4,5,6,7,8]
+    @numbers = (1..9).to_a
   end
-  
-  def show_answer
+
+  def action_tapped
     UIView.animateWithDuration(1.0,
                                animations:lambda {
-                                   @label.alpha = 0
-                                   @label.transform = CGAffineTransformMakeScale(0.1, 0.1)
+                                   @num.alpha = 0
+                                   @num.transform = CGAffineTransformMakeScale(0.1, 0.1)
                                },
                                completion:lambda { |finished|
-                                   @label.text = @numbers.sample.to_s
+                                   @num.text = @numbers.sample.to_s
                                    UIView.animateWithDuration(1.0,
                                                     animations:lambda {
-                                                        @label.alpha = 1
-                                                        @label.transform = CGAffineTransformIdentity
+                                                        @num.alpha = 1
+                                                        @num.transform = CGAffineTransformIdentity
                                                     })
                                })
   end
 
   def make_label
-    label = UILabel.alloc.initWithFrame([[10,60], [300,80]])
-    label.backgroundColor = UIColor.lightGrayColor
-    label.text = "Tap for a new number!"
-    label.font = UIFont.boldSystemFontOfSize(34)
-    label.textColor = UIColor.darkGrayColor
+    margin = 20
+    label = UILabel.new
+    label.font = UIFont.systemFontOfSize(30)
+    label.text = '[no number yet]'
     label.textAlignment = UITextAlignmentCenter
+    label.textColor = UIColor.whiteColor
+    label.backgroundColor = UIColor.clearColor
+    label.frame = [[margin, 240], [view.frame.size.width - margin * 2, 40]]
     label
   end
   
