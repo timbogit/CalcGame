@@ -2,6 +2,8 @@ class CalcGameViewController < UIViewController
 
   BUTTONS = 9
 
+  attr_accessor :equation, :number_buttons
+
   def loadView
     self.view = UIImageView.alloc.init
   end
@@ -10,29 +12,50 @@ class CalcGameViewController < UIViewController
     view.image = UIImage.imageNamed('background.jpg')
     view.userInteractionEnabled = true
 
-    @equation = make_equation_label
-    view.addSubview(@equation)
+    add_equation_and_number_buttons
 
-    @number_buttons = []
+  end
+
+  def equation
+    @equation ||= Equation.new(view)
+  end
+
+  def number_buttons
+    @number_buttons ||= []
+  end
+
+  def add_equation_and_number_buttons
+    view.addSubview(equation.label)
+
+    make_random_buttons.each { |button|
+      view.addSubview(button)
+    }
+  end
+
+  def make_random_buttons
     (0...BUTTONS).each do |pos|
-      number_button = make_button(pos, withValue: (rand(BUTTONS) + 1))
-      @number_buttons <<  number_button
-      view.addSubview(number_button)
+      number_buttons <<  make_button(pos, withValue: (rand(BUTTONS) + 1))
     end
-
+    number_buttons
   end
 
-  def make_equation_label
-    margin = 20
-    label = UILabel.new
-    label.font = UIFont.systemFontOfSize(30)
-    label.text = '9 - 8 = ?'
-    label.textAlignment = UITextAlignmentCenter
-    label.textColor = UIColor.whiteColor
-    label.backgroundColor = UIColor.clearColor
-    label.frame = [[margin, margin * 3], [view.frame.size.width - margin * 2, 40]]
-    label
+  def remove_equation_and_number_buttons
+    remove_equation
+    remove_number_bottons
   end
+
+  def remove_equation
+    @equation.label.removeFromSuperview if @equation
+    @equation = nil
+  end
+
+  def remove_number_bottons
+    number_buttons.each { |button|
+      button.removeFromSuperview
+    }
+    number_buttons
+  end
+
 
   def make_button(pos, withValue:val)
     margin = 10
@@ -48,15 +71,19 @@ class CalcGameViewController < UIViewController
   def action_tapped(sender)
     UIView.animateWithDuration(1.0,
                                animations:lambda {
-                                   @equation.alpha = 0
-                                   @equation.transform = CGAffineTransformMakeScale(0.1, 0.1)
+                                   @equation.label.alpha = 0
+                                   @equation.label.transform = CGAffineTransformMakeScale(0.1, 0.1)
                                },
                                completion:lambda { |finished|
-                                   @equation.text = sender.currentTitle
+                                   @equation.label.text = @equation.label.text.gsub(/\?/, sender.currentTitle)
                                    UIView.animateWithDuration(1.0,
                                                     animations:lambda {
-                                                        @equation.alpha = 1
-                                                        @equation.transform = CGAffineTransformIdentity
+                                                        @equation.label.alpha = 1
+                                                        @equation.label.transform = CGAffineTransformIdentity
+                                                    },
+                                                    completion:lambda { |finished|
+                                                        remove_equation_and_number_buttons
+                                                        add_equation_and_number_buttons
                                                     })
                                })
   end
