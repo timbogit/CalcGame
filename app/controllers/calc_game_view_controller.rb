@@ -1,6 +1,7 @@
 class CalcGameViewController < UIViewController
 
   BUTTONS = 9
+  RANGE = 0..((BUTTONS + 1) * 2)
 
   attr_accessor :equation, :number_buttons
 
@@ -34,10 +35,12 @@ class CalcGameViewController < UIViewController
   end
 
   def make_random_buttons
-    winner_pos = rand(BUTTONS)
-    (0...BUTTONS).each do |pos|
-      button =  (pos == winner_pos) ? make_button(pos, withValue: equation.result, forSuccess: true) : make_button(pos, withValue: (rand(BUTTONS) + 1), forSuccess: false)
-      puts "YAY: #{button.currentTitle}"
+    random_vals = RANGE.to_a.shuffle.take(BUTTONS)
+    all_vals = (random_vals << equation.result).uniq.shuffle.take(BUTTONS)
+    puts "Buttons: #{all_vals.inspect}"
+    winner_pos = all_vals.index(equation.result)
+    all_vals.each_with_index do |val, pos|
+      button =  (pos == winner_pos) ? make_button(pos, withValue: equation.result, forSuccess: true) : make_button(pos, withValue: val, forSuccess: false)
       number_buttons << button
     end
     number_buttons
